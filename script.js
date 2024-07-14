@@ -1,88 +1,102 @@
-"use strict"
+"use sctrict";
 
 class Bank {
-    constructor() {
+  constructor() {
+    this.info = {
+      currencies: [],
+      history: [],
+    };
+  }
 
-        this.info = {
-            currencies: [],
-            history: [],
-        }
+  pushHistory(type, lastBalance, res, currency) {
+    const date = new Date();
 
-        this.createCheck = function (currency) {
-            currency = currency.toUpperCase();
+    let dateNow =
+      date.getDate() +
+      "." +
+      date.getMonth() +
+      "." +
+      date.getFullYear() +
+      " " +
+      date.getHours() +
+      ":" +
+      date.getMinutes();
 
-            switch (currency) {
-                case "RUB":
-                case "USD":
-                    this.info[`${currency}`] = 0;
-                    this.info.currencies.push(`${currency}`);
-                    this.info.history.push(`Операция за ${new Date()}. Тип транзакции: Создание счёта (${currency})`);
+    this.info.history.push(
+      `Операция за ${dateNow}. Было ${lastBalance} ${currency}, стало ${res} ${currency}. Тип транзакции: ${type}`
+    );
+  }
 
-                    console.log(`Создан счёт (${currency})`);
+  createCheck(currency) {
+    currency = currency.toUpperCase();
 
-                    break;
-                default:
-                    console.log("Выбранная валюта не поддерживается");
+    if (currency == "RUB" || currency == "USD") {
+      this.info.currencies.push(`${currency}`);
+      this.info[`${currency}`] = 0;
 
-                    break;
-            }
-        }
+      this.pushHistory("Создание счёта", 0, 0, `${currency}`);
 
-        this.getChecks = () => console.log(`У вас есть следующие валютные счета: ${this.info.currencies}`);
-
-        this.addMoney = function (currency, amount) {
-            currency = currency.toUpperCase();
-
-            if (currency in this.info == true) {
-                this.info.history.push(`Операция за ${new Date()}. Было: ${this.info[`${currency}`]}, стало: ${this.info[`${currency}`] += amount}. Тип транзакции: пополнение счёта (${currency}) на ${amount}`);
-
-                console.log(`Счёт ${currency} пополнен на ${amount}`);
-            } else {
-                console.log("Такого счёта нет");
-            }
-        }
-
-        this.pay = function (amount, currency) {
-            currency = currency.toUpperCase();
-
-            if (currency in this.info == true) {
-                if (this.info[`${currency}`] >= amount) {
-                    this.info.history.push(`Операция за ${new Date()}. Было: ${this.info[`${currency}`]}, стало: ${this.info[`${currency}`] -= amount}. Тип транзакции: списание со счёта (${currency}) на сумму ${amount}`);
-
-                    console.log(`Списание со счёта ${currency} на сумму ${amount}`);
-                } else {
-                    console.log(`Недостаточно средств на счету ${currency}`);
-                }
-            } else {
-                console.log("Такого счёта нет");
-            }
-        }
-
-        this.getHistory = () => {
-            console.log("Вывод истории транзакций:");
-
-            for (let i = 0; i < this.info.history.length; i++) {
-                console.log(this.info.history[i]);
-            }
-        }
+      console.log(`Счёт ${currency} успешно создан`);
+    } else {
+      console.error(`Выбранная валюта (${currency}) не поддерживается`);
     }
+  }
+
+  getChecks() {
+    console.log(
+      `У вас имеются следующие валютные счета: ${this.info.currencies}`
+    );
+  }
+
+  addMoney(currency, amount) {
+    currency = currency.toUpperCase();
+
+    if (currency in this.info == true) {
+      if (amount > 0) {
+        this.pushHistory(
+          `Пополнение счёта ${currency} на ${amount} ${currency}`,
+          `${this.info[`${currency}`]}`,
+          `${(this.info[`${currency}`] += amount)}`,
+          `${currency}`
+        );
+      } else {
+        console.error("Сумма пополнения не может быть отрицательной");
+      }
+    } else {
+      console.error("Выбранный счёт не существует");
+    }
+  }
+
+  pay(currency, amount) {
+    if (currency in this.info == true) {
+      if (this.info[`${currency}`] >= amount) {
+        this.pushHistory(
+          `Списание со счёта ${currency} на сумму ${amount} ${currency}`,
+          `${this.info[`${currency}`]}`,
+          `${(this.info[`${currency}`] -= amount)}`,
+          `${currency}`
+        );
+      } else {
+        console.error(`Недостаточно средств на счету ${currency}`);
+      }
+    } else {
+      console.error("Выбранный счёт не существует");
+    }
+  }
+
+  getHistory() {
+    console.log("Вывод истории транзакций:");
+
+    for (let i = 0; i < this.info.history.length; i++) {
+      console.log(this.info.history[i]);
+    }
+  }
 }
 
 const bank = new Bank();
 
-// Работа с RUB счётом
 bank.createCheck("RUB");
 bank.getChecks();
-bank.addMoney("RUB", 1000);
-bank.pay(100, "RUB");
+bank.addMoney("RUB", 100);
+bank.pay("RUB", 10);
 bank.getHistory();
-
-// Работа с USD счётом
-bank.createCheck("USD");
-bank.getChecks();
-bank.addMoney("USD", 500);
-bank.pay(50, "USD");
-bank.getHistory();
-
-// Работа с иным валютным счётом
-bank.createCheck("CHF");
